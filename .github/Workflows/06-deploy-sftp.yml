@@ -1,0 +1,32 @@
+name: Pipeline CI/CD ÉcoShop Deploy SFTP
+
+on:
+  push:
+    branches: ["force_deploy"]
+  pull_request:
+    branches: ["force_deploy"]
+
+jobs:
+
+  # ==========================================
+  # DÉPLOIEMENT PROD (Serveur SFTP)
+  # ==========================================
+  deploy-to-production:
+    name: Déploiement Production Souveraine (Alwaysdata)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Nettoyage des dossiers de développement (.git, .github)
+        run: rm -rf .git .github .idea node_modules *.json .* eslint* package* light*
+
+      - name: Déploiement Production SFTP Sovereign
+        uses: wlixcc/SFTP-Deploy-Action@v1.2.4
+        with:
+          server: ${{ secrets.SFTP_SERVER }}
+          username: ${{ secrets.SFTP_USERNAME }}
+          password: ${{ secrets.SFTP_PASSWORD }}
+          port: 22
+          local_path: './'      # Note le changement de nom du paramètre
+          remote_path: './www/'
+          ssh_private_key: ''

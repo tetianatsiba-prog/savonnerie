@@ -1,0 +1,43 @@
+# 1
+# .github/workflows/...
+name: Validation Qualité (HTML, CSS, JS)
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  verification-code:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Récupère le code de l'estudiant
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 2. Installe l'environnement Node.js pour exécuter les outils
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      # 3. Installe les validateurs officiels
+      - name: Installer les Linters
+        run: |
+          npm install -g htmlhint
+          npm install --save-dev eslint stylelint stylelint-config-standard
+
+      # 4. Validation HTML (Vérifie les balises non fermées, les ID en double, les attributs manquants)
+      - name: Contrôle HTML
+        run: htmlhint "**/*.html"
+
+      # 5. Validation CSS (Détecte les erreurs de syntaxe et propriétés invalides)
+      - name: Contrôle CSS
+        run: npx stylelint "**/*.css"
+
+      # 6. Validation JavaScript (Détecte les variables non utilisées, les points-virgules manquants, la syntaxe cassée)
+      - name: Contrôle JavaScript
+        run: npx eslint "**/*.js"

@@ -1,0 +1,87 @@
+name: Pipeline CI/CD ÉcoShop Intégral
+
+# Le pipeline écoute absolument tout le monde
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  # ==========================================
+  # ÉTAPE 1 : QUALITÉ (S'exécute toujours)
+  # ==========================================
+  quality-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Installer et Lancer les Linters
+        run: |
+          npm install -g htmlhint
+          npm install --save-dev eslint stylelint stylelint-config-standard
+          htmlhint "**/*.html"
+          npx stylelint "**/*.css"
+          npx eslint "**/*.js"
+
+  # ==========================================
+  # ÉTAPE 2 : PERFORMANCE (S'exécute toujours)
+  # ==========================================
+  perf-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Serveur local
+        run: |
+          python3 -m http.server 8080 &
+          sleep 3
+      - name: Vérification du Budget
+        uses: treosh/lighthouse-ci-action@v12
+        with:
+          urls: |
+            http://localhost:8080/index.html
+            http://localhost:8080/dashboard.html
+          budgetPath: ./lighthouse-budget.json
+          uploadArtifacts: true
+
+  # ==========================================
+  # ÉTAPE 3 : DÉPLOIEMENT TEST (GitHub Pages)
+  # ==========================================
+  deploy-to-staging:
+    runs-on: ubuntu-latest
+    # 🛡️ SÉCURITÉ : Attend impérativement la réussite de la Qualité ET de la Perf
+    needs: [quality-check, perf-audit]
+    # 🎯 FILTRE : Uniquement si on est sur la branche 'test'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/test'
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Déploiement Staging
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./
+
+  # ==========================================
+  # ÉTAPE 4 : DÉPLOIEMENT PROD (Serveur SFTP)
+  # ==========================================
+  deploy-to-production:
+    runs-on: ubuntu-latest
+    # 🛡️ SÉCURITÉ : Attend aussi la réussite de la Qualité ET de la Perf
+    needs: [quality-check, perf-audit]
+    # 🎯 FILTRE : Uniquement si on est sur 'main' ou 'master'
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    steps:
+      - uses: actions/checkout@v4
+      - name: Déploiement Production SFTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.SFTP_SERVER }}
+          username: ${{ secrets.SFTP_USERNAME }}
+          password: ${{ secrets.SFTP_PASSWORD }}
+          port: 22
+          local-dir: ./
+          server-dir: /var/www/ecoshop/

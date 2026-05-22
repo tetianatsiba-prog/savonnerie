@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SshConfigs">
+    <configs>
+      <sshConfig authType="PASSWORD" host="ssh-tetianatsyba.alwaysdata.net" id="ced0a0fb-a66c-4e9b-aed2-19b38cda0a0e" port="22" nameFormat="DESCRIPTIVE" username="tetianatsyba" useOpenSSHConfig="true" />
+    </configs>
+  </component>
+</project>

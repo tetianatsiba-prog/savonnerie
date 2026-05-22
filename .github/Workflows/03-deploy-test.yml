@@ -1,0 +1,19 @@
+name: 03 - CD Test (GitHub Pages)
+
+on:
+  push:
+    branches: [ "test" ] # Uniquement sur la branche test
+
+permissions:
+  contents: write
+
+jobs:
+  deploy-gh-pages:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Publier sur la recette
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./

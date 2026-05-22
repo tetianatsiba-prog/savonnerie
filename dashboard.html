@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoShop - Espace Client</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.css">
+
+    <script src="mock-chat-widget.js"></script>
+</head>
+<body class="p-4">
+
+<main class="container">
+    <h1>Mon Espace Client</h1>
+
+    <div id="alert-banner-zone"></div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card p-3 shadow-sm">
+                <h3>Statistiques d'Achats (2026)</h3>
+                <p>🌱 Score Carbone : <strong>A+</strong></p>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    setTimeout(() => {
+        document.getElementById('alert-banner-zone').innerHTML = `
+                <div class="alert alert-warning">
+                    ⚠️ <strong>Attention :</strong> Votre livraison de paniers bio prévue pour demain est décalée de 2h !
+                </div>
+            `;
+    }, 800);
+
+    // PIÈGE G : Requêtes réseau en boucle infinie (Polling agressif non nettoyé)
+    setInterval(() => {
+        fetch('https://jsonplaceholder.typicode.com/todos/1')
+            .then(response => response.json())
+            .then(data => console.log("Vérification des notifications en arrière-plan...", data));
+    }, 1000);
+</script>
+</body>
+</html>
